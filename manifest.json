@@ -1,0 +1,12 @@
+{
+  "name": "DS Tools",
+  "id": "1222612059792867584",
+  "api": "1.0.0",
+  "main": "code.js",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "editorType": [
+    "figma"
+  ],
+  "ui": "ui.html"
+}

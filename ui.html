@@ -1,0 +1,146 @@
+<link href="https://yarnpkg.com/en/package/normalize.css" rel="stylesheet">
+<style>
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    * {
+        margin: 0;
+    }
+
+    html,
+    body {
+        height: 100%;
+    }
+
+    body {
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    img,
+    picture,
+    video,
+    canvas,
+    svg {
+        display: block;
+        max-width: 100%;
+    }
+
+    input,
+    button,
+    textarea,
+    select {
+        font: inherit;
+    }
+
+    p,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        overflow-wrap: break-word;
+    }
+
+    #root,
+    #__next {
+        isolation: isolate;
+    }
+
+    :root {
+        --background: hsl(0, 0%, 19%);
+        --foreground: hsl(0, 0%, 86%);
+        --faint-accent: hsl(0, 0%, 26%);
+
+    }
+
+    * {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        ;
+    }
+
+    body {
+        background: var(--background);
+        color: var(--foreground);
+    }
+
+    main {
+        display: grid;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .figma-dark body {
+        color: var(--foreground);
+    }
+
+    button {
+        cursor: pointer;
+        padding: 0.2rem 0.5rem;
+        inline-size: fit-content;
+        font-size: small;
+        color: var(--foreground);
+        background: var(--background);
+        border: 1px solid var(--foreground);
+        border-radius: 0.3rem;
+        transition: background-color 50ms ease-in;
+
+    }
+
+    button:hover {
+        background: hsl(0, 0%, 23%)
+    }
+
+    button:active {
+        background: hsl(0, 0%, 20%)
+    }
+
+    button:focus {
+        outline: 2px solid blue;
+    }
+
+    button:focus-visible {
+        outline: 2px solid lightblue;
+    }
+
+    fieldset {
+        display: grid;
+        gap: 1rem;
+        border: 1px var(--faint-accent) solid;
+        border-radius: 0.2rem;
+    }
+
+</style>
+<main class="plugin">
+
+    <h2>Design System Tools</h2>
+    <fieldset>
+        <div class="radio-unit">
+            <input type="radio" id="horizontal" name="orientation" value="horizontal" checked>
+            <label for="horizontal">Horizontal</label>
+        </div>
+        <div class="radio-unit">
+            <input type="radio" id="vertical" name="orientation" value="vertical">
+            <label for="vertical">Vertical</label>
+        </div>
+    </fieldset>
+    <button id="label" type="button">Label Component</button>
+</main>
+<script>
+    const elements = document.getElementsByName('orientation')
+    let orientation = ''
+
+    document.getElementById('label').onclick = () => {
+        for (var i = 0; i < elements.length; i++) {
+            if (elements[i].checked) {
+                orientation = elements[i].value
+                console.log(orientation)
+            }
+        }
+        parent.postMessage({pluginMessage: {type: 'label', orientation: orientation}}, '*')
+    }
+</script>
