@@ -129,6 +129,7 @@
         </div>
     </fieldset>
     <button id="label" type="button">Label Component</button>
+    <button id="parts" type="button">Label Parts</button>
 </main>
 <script>
     const elements = document.getElementsByName('orientation')
@@ -143,4 +144,10 @@
         }
         parent.postMessage({pluginMessage: {type: 'label', orientation: orientation}}, '*')
     }
+
+    document.getElementById('parts').onclick = () => {
+        parent.postMessage({pluginMessage: {type: 'parts'}}, '*')
+    }
+
+    onmessage = (event) => console.log(event.data.pluginMessage)
 </script>

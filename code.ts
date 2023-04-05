@@ -20,8 +20,43 @@ figma.ui.onmessage = msg => {
     }
 
   }
+  else if (msg.type === 'parts') {
+    console.log("label parts")
+    for (const node of figma.currentPage.selection) {
+      if ("children" in node) {
+        const children = node.children as InstanceNode[]
+        children.forEach((child) => {
+          if (child.visible === true) {
+            console.log(child.name)
+            addPointers(child.absoluteRenderBounds!.x, node.y + node.height, 'Up')
+          }
+        })
+      }
+    }
+  }
 };
+figma.ui.postMessage("Hello world")
 
+declare type Direction = 'Up' | 'Down' | 'Left' | 'Right'
+
+function addPointers(x: number = 0, y: number = 0, direction: Direction = 'Up') {
+  const main = figma.root.findOne(n => n.name === "Figure Number")
+
+  if (main != undefined) {
+    if ("children" in main) {
+      const parent = main.children.filter(n => n.name === "Figure Number")[0]
+
+      if ("children" in parent) {
+        const children = parent.children as SceneNode[]
+        let component = children.filter(n => n.name === `Orientation=${direction}`)[0] as ComponentNode
+        component.resize(component.width, 48)
+        let instance = component.createInstance()
+        instance.x = x
+        instance.y = y
+      }
+    }
+  }
+}
 
 
 function addLabel(name: string, x: number, y: number, fontName: FontName) {
