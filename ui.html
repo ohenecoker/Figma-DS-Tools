@@ -66,11 +66,12 @@
     body {
         background: var(--background);
         color: var(--foreground);
+        font-size: small;
     }
 
     main {
         display: grid;
-        gap: 1rem;
+        gap: 0.5rem;
         padding: 1rem;
     }
 
@@ -119,6 +120,7 @@
 
     <h2>Design System Tools</h2>
     <fieldset>
+        <legend>Orientation</legend>
         <div class="radio-unit">
             <input type="radio" id="horizontal" name="orientation" value="horizontal" checked>
             <label for="horizontal">Horizontal</label>
@@ -146,7 +148,13 @@
     }
 
     document.getElementById('parts').onclick = () => {
-        parent.postMessage({pluginMessage: {type: 'parts'}}, '*')
+        for (var i = 0; i < elements.length; i++) {
+            if (elements[i].checked) {
+                orientation = elements[i].value
+                console.log(orientation)
+            }
+        }
+        parent.postMessage({pluginMessage: {type: 'parts', orientation: orientation}}, '*')
     }
 
     onmessage = (event) => console.log(event.data.pluginMessage)

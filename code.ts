@@ -1,3 +1,4 @@
+
 figma.showUI(__html__);
 figma.ui.resize(400, 300)
 figma.ui.onmessage = msg => {
@@ -21,38 +22,96 @@ figma.ui.onmessage = msg => {
 
   }
   else if (msg.type === 'parts') {
-    console.log("label parts")
+    console.clear()
     for (const node of figma.currentPage.selection) {
       if ("children" in node) {
         const children = node.children as InstanceNode[]
+        let number = 1;
         children.forEach((child) => {
           if (child.visible === true) {
-            console.log(child.name)
-            addPointers(child.absoluteRenderBounds!.x, node.y + node.height, 'Up')
+            const position = setPosition(msg.orientation, child, node)
+            const childSize: Size = { width: child.absoluteRenderBounds!.width, height: child.absoluteBoundingBox!.height }
+            console.log(position)
+            console.log(msg.orientation)
+            addPointers(position, childSize, number)
+            number += 1
           }
         })
       }
     }
   }
 };
+
+function setPosition(orienation: string, child: InstanceNode, parent: SceneNode) {
+  let position: Position = {
+    x: 0,
+    y: 0,
+    direction: 'Up'
+  }
+  switch (orienation) {
+    case 'horizontal':
+      position = {
+        x: child.absoluteRenderBounds!.x,
+        y: child.absoluteBoundingBox!.y + child.absoluteBoundingBox!.height + 2,
+        direction: 'Up'
+      }
+      break
+    case 'vertical':
+      position = {
+        x: child.absoluteBoundingBox!.x,
+        y: child.absoluteBoundingBox!.y,
+        direction: 'Right'
+      }
+      break
+  }
+  return position;
+}
+
+interface Size {
+  width: number,
+  height: number,
+}
+
+interface Position {
+  x: number,
+  y: number,
+  direction: Direction
+}
 figma.ui.postMessage("Hello world")
 
 declare type Direction = 'Up' | 'Down' | 'Left' | 'Right'
 
-function addPointers(x: number = 0, y: number = 0, direction: Direction = 'Up') {
+function addPointers(position: Position, size: Size, number: number = 0) {
   const main = figma.root.findOne(n => n.name === "Figure Number")
 
   if (main != undefined) {
     if ("children" in main) {
       const parent = main.children.filter(n => n.name === "Figure Number")[0]
-
       if ("children" in parent) {
         const children = parent.children as SceneNode[]
-        let component = children.filter(n => n.name === `Orientation=${direction}`)[0] as ComponentNode
-        component.resize(component.width, 48)
-        let instance = component.createInstance()
-        instance.x = x
-        instance.y = y
+        let component = children.filter(n => n.name === `Orientation=${position.direction}`)[0] as ComponentNode
+        let numberComponent = component.children[1]
+        if ("mainComponent" in numberComponent) {
+          component.resize(component.width, 48)
+          let instance = component.createInstance()
+          instance.x = position.x
+          instance.y = position.y
+          let subs = instance.children
+          let num = subs.slice(0)[0] as InstanceNode
+          switch (position.direction) {
+            case 'Up':
+              num = subs.slice(1)[0] as InstanceNode
+              num.setProperties({ "Number#1:0": number.toString() })
+              break
+            case 'Right':
+              num = subs.slice(0)[0] as InstanceNode
+              num.resize(10, 10)
+              num.setProperties({ "Number#1:0": number.toString() })
+          }
+
+
+
+        }
       }
     }
   }
