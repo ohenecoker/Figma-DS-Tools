@@ -1,29 +1,48 @@
 figma.showUI(__html__);
 figma.ui.resize(400, 300)
+
+
 figma.ui.onmessage = msg => {
     if (msg.type === 'label') {
         for (const node of figma.currentPage.selection) {
-            const parentX = node.absoluteBoundingBox!.x
-            const parentY = msg.orientation == 'horizontal' && node.type === 'COMPONENT_SET' ? node.absoluteBoundingBox!.y - (48 * 2) : node.absoluteBoundingBox!.y - 48
+            const parentX = node.x
+            const parentY = msg.orientation == 'horizontal' && node.type === 'COMPONENT_SET' ? node.absoluteBoundingBox!.y - (48 * 2) : node.y - 48
             const fontName: FontName = {family: "Rubik", style: "Bold"}
-            addLabel(node.name, parentX, parentY, fontName)
+            addLabel(node.name, parentX, parentY, fontName, node.parent as FrameNode)
             if (node.type === 'COMPONENT_SET') {
                 let longest = 0
                 const gap = 48
-                node.children.forEach(item => {
-                    if (item.width > longest) {
-                        longest = item.absoluteBoundingBox!.width
-                    }
-                })
-                node.children.forEach((item) => {
-                    let x = msg.orientation === 'horizontal' ? item.absoluteBoundingBox!.x + node.width : item.absoluteBoundingBox!.x + (node.width - (longest / 2) + gap)
-                    const y = msg.orientation === 'horizontal' ? node.absoluteBoundingBox!.y - 48 : item.absoluteBoundingBox!.y
-                    if (x != undefined) {
-                        x = x - node.width
-                    }
-                    const name = item.name.split("=")[1]
-                    const fontName: FontName = {family: "Rubik", style: "Regular"}
-                    addLabel(name, x, y, fontName)
+
+                figma.loadFontAsync({family: "Inter", style: "Regular"}).then((_) => {
+                    figma.loadFontAsync({family: "Rubik", style: "Regular"}).then(async (_) => {
+                        longest = await getLongestTextLength(node, fontName).then(async value => {
+                            return value
+                        })
+                        console.log("longest: ", longest)
+                        for (const item of node.children) {
+                            let name = ""
+                            let length: number = 0
+                            item.name.split(",").map(thing => {
+                                if (name === "") {
+                                    name = thing.split("=")[1]
+                                } else {
+                                    name = `${name} / ${thing.split("=")[1]}`
+                                }
+                            })
+                            name = name.split("/").reverse().join(" / ")
+                            const fontName: FontName = {family: "Rubik", style: "Regular"}
+
+                            length = await getTextLength(item, fontName).then(async value => {
+                                return value
+                            })
+                            console.log("length: ", length)
+
+                            console.log(node.parent)
+                            let x = msg.orientation === 'horizontal' ? item.absoluteBoundingBox!.x + node.width : /*(node.width - length)*/node.x + (node.width - length) - (node.width) - gap
+                            const y = msg.orientation === 'horizontal' ? node.absoluteBoundingBox!.y - 48 : node.y + item.y
+                            addLabel(name, x, y, fontName, node.parent as FrameNode)
+                        }
+                    })
                 })
             }
         }
@@ -128,18 +147,67 @@ function addPointers(position: Position, size: Size, number: number = 0) {
 }
 
 
-function addLabel(name: string, x: number, y: number, fontName: FontName) {
+function addLabel(name: string, x: number, y: number, fontName: FontName, parent?: SceneNode) {
     figma.loadFontAsync({family: "Inter", style: "Regular"}).then((_) => {
         figma.loadFontAsync(fontName).then((_) => {
             let cv = (x: any) => x / 255
             const color: RGB = {r: cv(151), g: cv(71), b: cv(255)}
             let text = figma.createText()
+            text.name = "Annotation Label"
             text.y = y
             text.x = x ??= 0
+            if (parent != undefined) {
+                if (parent.type == 'FRAME') {
+                    parent.appendChild(text)
+                }
+            } else {
+                figma.currentPage.appendChild(text)
+            }
             text.insertCharacters(0, name, 'BEFORE')
             text.setRangeFontName(0, name.length, fontName)
             text.setRangeFills(0, name.length, [{type: 'SOLID', color: color}])
-            figma.currentPage.appendChild(text)
+            text.textAlignHorizontal = "RIGHT"
         })
     })
+}
+
+async function getLongestTextLength(node: ComponentSetNode, fontName: FontName) {
+    let longest = 0
+    node.children.forEach(item => {
+        let name = ""
+        item.name.split(",").map(thing => {
+            if (name === "") {
+                name = thing.split("=")[1]
+            } else {
+                name = `${name} / ${thing.split("=")[1]}`
+            }
+        })
+        let text = figma.createText()
+        text.insertCharacters(0, name, 'BEFORE')
+        text.setRangeFontName(0, name.length, fontName)
+        if (longest < text.width) {
+            console.log("text width: ", text.width)
+            longest = text.width
+        }
+        text.remove()
+    })
+    return longest;
+}
+
+async function getTextLength(node: SceneNode, fontName: FontName) {
+    let name = ""
+    let width: number
+    node.name.split(",").map(thing => {
+        if (name === "") {
+            name = thing.split("=")[1]
+        } else {
+            name = `${name} / ${thing.split("=")[1]}`
+        }
+    })
+    let text = figma.createText()
+    text.insertCharacters(0, name, 'BEFORE')
+    text.setRangeFontName(0, name.length, fontName)
+    width = text.width;
+    text.remove()
+    return width
 }
