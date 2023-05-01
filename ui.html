@@ -124,7 +124,8 @@
             <label for="vertical">Vertical</label>
         </div>
     </fieldset>
-    <button id="label" type="button">Label Component</button>
+    <button id="label" type="button">Label Component with Variants</button>
+    <button id="exp" type="button">Label Experimental</button>
     <button id="parts" type="button">Label Parts</button>
 </main>
 <script>
@@ -138,6 +139,14 @@
             }
         }
         parent.postMessage({pluginMessage: {type: 'label', orientation: orientation}}, '*')
+    }
+    document.getElementById('exp').onclick = () => {
+        for (let i = 0; i < elements.length; i++) {
+            if (elements[i].checked) {
+                orientation = elements[i].value
+            }
+        }
+        parent.postMessage({pluginMessage: {type: 'exp', orientation: orientation}}, '*')
     }
 
     document.getElementById('parts').onclick = () => {
