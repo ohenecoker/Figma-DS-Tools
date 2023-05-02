@@ -4,6 +4,19 @@ figma.ui.resize(400, 300)
 
 figma.ui.onmessage = msg => {
     if (msg.type === 'label' || msg.type === 'exp') {
+        console.clear()
+        let labels: TextNode[] = []
+        let allVariantLabelsFrame = figma.createFrame()
+        let mainComponentLabelFrame = figma.createFrame()
+        mainComponentLabelFrame.name = 'Component Label Annotation'
+        mainComponentLabelFrame.itemSpacing = 32
+        mainComponentLabelFrame.layoutMode = msg.orientation === 'horizontal' ? 'VERTICAL' : 'HORIZONTAL'
+        mainComponentLabelFrame.counterAxisAlignItems = 'MIN'
+        mainComponentLabelFrame.layoutAlign = 'STRETCH'
+        mainComponentLabelFrame.counterAxisSizingMode = 'AUTO'
+        allVariantLabelsFrame.layoutMode = msg.orientation === 'horizontal' ? 'HORIZONTAL' : 'VERTICAL'
+        allVariantLabelsFrame.counterAxisAlignItems = 'MAX'
+        allVariantLabelsFrame.counterAxisSizingMode = 'AUTO'
         for (const node of figma.currentPage.selection) {
             let gap = 48
             const originalPosition: Position = {
@@ -19,63 +32,90 @@ figma.ui.onmessage = msg => {
             let parentY = msg.orientation == 'horizontal' && node.type === 'COMPONENT_SET' ? node.y - (gap * 2) : node.y - gap
             const fontName: FontName = {family: "Rubik", style: "Bold"}
             let frame = figma.createFrame()
+            frame.layoutMode = msg.orientation == 'horizontal' ? 'HORIZONTAL' : 'VERTICAL'
+            frame.counterAxisSizingMode = 'AUTO'
+            frame.primaryAxisSizingMode = 'AUTO'
+            frame.itemReverseZIndex = false
+            frame.itemSpacing = 32
+            // let wrapper = figma.createFrame()
+            // wrapper.layoutMode = 'HORIZONTAL'
+            // wrapper.layoutAlign = 'STRETCH'
             let fills: Paint[] = []
             frame.fills = fills
             if (msg.type === 'exp') {
                 parent!.appendChild(frame)
                 frame.name = `Annotation Frame: ${node.name}`
-                frame.appendChild(node)
-                if (msg.orientation === 'horizontal') {
-                    frame.resize(node.width, node.height + gap)
-                } else {
-                    frame.resize(node.width, node.height + gap)
-                }
-                frame.clipsContent = false
+                // wrapper.appendChild(node)
+                // wrapper.appendChild(mainComponentLabelFrame)
+                mainComponentLabelFrame.appendChild(node)
+                frame.appendChild(mainComponentLabelFrame)
                 node.y = frame.y + (frame.height - node.height)
                 node.x = frame.x
                 parentY = frame.y
                 parentX = frame.x
             }
-            let topLabel = addLabel(node.name, parentX, parentY, fontName, parent as FrameNode, true, frame)
+            let topLabel = addLabel(
+                node.name,
+                parentX,
+                parentY,
+                fontName,
+                parent as FrameNode,
+                true,
+                frame,
+                msg.orientation,
+                undefined,
+                mainComponentLabelFrame,
+                node,
+            )
             let longest = 0
+            let variantLabel: TextNode = figma.createText();
             if (node.type === 'COMPONENT_SET') {
-
                 figma.loadFontAsync({family: "Inter", style: "Regular"}).then((_) => {
                     figma.loadFontAsync({family: "Rubik", style: "Regular"}).then(async (_) => {
                         longest = await getLongestTextLength(node, fontName).then(async value => {
                             return value
                         })
-                        if (msg.orientation === 'vertical' && msg.type === 'exp') {
-                            frame.resize(node.width + longest + gap, node.height + gap)
-                            node.x = frame.width - node.width
-                            topLabel.x = node.x
-                        }
-                        console.log("longest: ", longest)
+                        // if (msg.orientation === 'vertical' && msg.type === 'exp') {
+                        //     frame.resize(node.width + longest + gap, node.height + gap)
+                        //     node.x = frame.width - node.width
+                        //     topLabel.x = node.x
+                        // }
                         for (const item of node.children) {
                             let name = ""
                             let length: number = 0
-                            item.name.split(",").map(thing => {
-                                if (name === "") {
-                                    name = thing.split("=")[1]
-                                } else {
-                                    name = `${name} / ${thing.split("=")[1]}`
-                                }
-                            })
+                            item.name.split(",").map(thing =>
+                                name = createVariantText(thing, name)
+                            )
                             name = name.split("/").reverse().join(" / ")
                             const fontName: FontName = {family: "Rubik", style: "Regular"}
 
                             length = await getTextLength(item, fontName).then(async value => {
                                 return value
                             })
-                            console.log("length: ", length)
 
-                            console.log(node.parent)
                             let x = msg.orientation === 'horizontal' ? node.x + (item.x) : node.x + (node.width - length) - (node.width) - gap
                             const y = msg.orientation === 'horizontal' ? node.y - (gap / 2) : node.y + item.y
-                            addLabel(name, x, y, fontName, node.parent as FrameNode)
+                            variantLabel = addLabel(
+                                name,
+                                x,
+                                y,
+                                fontName,
+                                node.parent as FrameNode,
+                                false,
+                                undefined,
+                                msg.orientation,
+                                allVariantLabelsFrame,
+                                mainComponentLabelFrame,
+                                item
+                            )
                         }
                     })
                 })
+
+                // labels.push(variantLabel)
+
+
+                // putLabelsInFrame()
             }
             if (msg.orientation === 'horizontal') {
                 frame.x = originalPosition.x
@@ -84,6 +124,7 @@ figma.ui.onmessage = msg => {
                 frame.x = originalPosition.x - ((frame.width + gap + longest) / 2)
                 frame.y = originalPosition.y
             }
+
         }
 
     } else if (msg.type === 'parts') {
@@ -99,8 +140,6 @@ figma.ui.onmessage = msg => {
                             width: child.absoluteRenderBounds!.width,
                             height: child.absoluteBoundingBox!.height
                         }
-                        console.log(position)
-                        console.log(msg.orientation)
                         addPointers(position, childSize, number)
                         number += 1
                     }
@@ -109,6 +148,28 @@ figma.ui.onmessage = msg => {
         }
     }
 };
+
+function putLabelsInFrame() {
+    let results = figma.currentPage.findAll(item => item.name.includes("Annotation"))
+    console.log(results)
+}
+
+function createVariantText(variantProp: string, name: string) {
+    let propValue = variantProp.split("=")[1];
+    let propKey = variantProp.split("=")[0];
+    if (propValue == 'True') {
+        propValue = propKey
+        // console.log(propKey)
+    } else if (propValue == 'False') {
+        propValue = `Enabled`
+    }
+    if (name === "") {
+        name = propValue
+    } else {
+        name = `${name} / ${propValue}`
+    }
+    return name
+}
 
 function setPosition(orientation: string, child: InstanceNode) {
     let position: Position = {
@@ -146,7 +207,7 @@ interface Position {
     direction: Direction
 }
 
-figma.ui.postMessage("Hello world")
+figma.ui.postMessage("DS Tools")
 
 declare type Direction = 'Up' | 'Down' | 'Left' | 'Right'
 
@@ -192,22 +253,45 @@ function addLabel(name: string,
                   fontName: FontName,
                   parentFrame?: SceneNode,
                   wrapInFrame: boolean = false,
-                  frameNode?: FrameNode
+                  frameNode?: FrameNode,
+                  orientation?: string,
+                  innerLabelWrapper?: FrameNode,
+                  mainComponentLabelFrame?: FrameNode,
+                  subjectFrame?: SceneNode,
+                  variantsComponentsWrapper?: FrameNode,
 ) {
     let text = figma.createText()
     figma.loadFontAsync({family: "Inter", style: "Regular"}).then((_) => {
         figma.loadFontAsync(fontName).then((_) => {
             let cv = (x: any) => x / 255
             const color: RGB = {r: cv(151), g: cv(71), b: cv(255)}
-            text.name = "Annotation Label"
+            text.name = `Annotation Label: ${name}`
             text.y = y
             text.x = x ??= 0
-            // let frame =
-            if (wrapInFrame == true) {
-                frameNode!.appendChild(text)
-            } else if (parentFrame != undefined) {
-                if (parentFrame.type == 'FRAME') {
-                    parentFrame.appendChild(text)
+            if (innerLabelWrapper != undefined) {
+                // Variant labels
+                if (parentFrame != undefined && parentFrame.type == 'FRAME') {
+                    // parentFrame.parent!.insertChild(0, mainComponentLabelFrame!)
+                    mainComponentLabelFrame!.insertChild(0, innerLabelWrapper)
+                    innerLabelWrapper.itemSpacing = subjectFrame?.height!
+                }
+                innerLabelWrapper.appendChild(text)
+
+            } else if (mainComponentLabelFrame != null) {
+                let labelFrame = figma.createFrame()
+                labelFrame.layoutMode = 'VERTICAL'
+                labelFrame.layoutAlign = 'STRETCH'
+                labelFrame.counterAxisAlignItems = 'MAX'
+                // Main label
+                if (parentFrame != undefined && parentFrame.type == 'FRAME') {
+                    labelFrame.appendChild(text)
+                    if (frameNode != undefined && frameNode.type == 'FRAME') {
+                        frameNode.insertChild(0, labelFrame)
+                        //     if (mainComponentLabelFrame != undefined) {
+                        //         mainComponentLabelFrame.insertChild(0, text)
+                        //     }
+                        // }
+                    }
                 }
             } else {
                 figma.currentPage.appendChild(text)
@@ -226,17 +310,13 @@ async function getLongestTextLength(node: ComponentSetNode, fontName: FontName) 
     node.children.forEach(item => {
         let name = ""
         item.name.split(",").map(thing => {
-            if (name === "") {
-                name = thing.split("=")[1]
-            } else {
-                name = `${name} / ${thing.split("=")[1]}`
-            }
+            name = createVariantText(thing, name)
+            // console.log(name)
         })
         let text = figma.createText()
         text.insertCharacters(0, name, 'BEFORE')
         text.setRangeFontName(0, name.length, fontName)
         if (longest < text.width) {
-            console.log("text width: ", text.width)
             longest = text.width
         }
         text.remove()
