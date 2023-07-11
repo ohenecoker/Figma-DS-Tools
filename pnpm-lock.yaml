@@ -1,17 +1,21 @@
-lockfileVersion: '6.0'
+lockfileVersion: '6.1'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
 
 devDependencies:
   '@figma/plugin-typings':
-    specifier: ^1.62.0
-    version: 1.62.0
+    specifier: ^1.70.0
+    version: 1.70.0
   typescript:
     specifier: '*'
     version: 5.0.2
 
 packages:
 
-  /@figma/plugin-typings@1.62.0:
-    resolution: {integrity: sha512-Pv1DZqsuJJbzVsqgCz1fPPxEdQ1o521jbcMw1MDyM9oerw7QltM8TluR5BrGgBi6Zc8zXE6J6ZuUbzz/x7Bh6A==}
+  /@figma/plugin-typings@1.70.0:
+    resolution: {integrity: sha512-dN/ehVt40WDSjuf6+vICw1Btq8yKNvKSo5xl1qk8jfRaOdaN88QOYgODEVUGp9gSzlyUEhUKng0YMKg/doBpEg==}
     dev: true
 
   /typescript@5.0.2:

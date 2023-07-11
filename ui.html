@@ -1,4 +1,4 @@
-<style>
+<!-- <style>
     *,
     *::before,
     *::after {
@@ -109,6 +109,17 @@
         border-radius: 0.2rem;
     }
 
+    .single-row-multi-txt-input {
+        display: flex;
+        flex-flow: row;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    :is(.single-row-multi-txt-input) input {
+        inline-size: 4rem;
+    }
+
 </style>
 <main class="plugin">
 
@@ -127,11 +138,96 @@
     <button id="label" type="button">Label Component with Variants</button>
     <button id="exp" type="button">Label Experimental</button>
     <button id="parts" type="button">Label Parts</button>
+    <br/>
+    <fieldset>
+        <legend>Font Styles</legend>
+        <div class="radio-unit">
+            <input checked id="regular" name="weight" type="radio" value="Regular">
+            <label for="regular">Regular</label>
+        </div>
+        <div class="radio-unit">
+            <input id="medium" name="weight" type="radio" value="Medium">
+            <label for="medium">Medium</label>
+            <br/>
+        </div>
+        <div class="radio-unit">
+            <input id="italic" name="decoration" type="checkbox">
+            <label for="italic">Italic</label>
+            <br/>
+        </div>
+        <div>
+            <label>Font size</label>
+            <input defaultValue="16" name="font-size" placeholder="16" type="number"/>
+        </div>
+        <div>
+            <label for="line-height">Line Height</label>
+            <input defaultValue="16" id="line-height" name="line-height" placeholder="16" type="number"/>
+        </div>
+        <div class="single-row-multi-txt-input">
+            <label for="group">Group</label>
+            <input id="group" name="group" type="text"/>
+            <label for="size">Size</label>
+            <input id="size" name="size" type="text"/>
+            <label for="density">Density</label>
+            <input id="density" name="density" type="text"/>
+        </div>
+    </fieldset>
+    <button id="make-style" type="button">Generate style</button>
 </main>
-<script>
-    const elements = document.getElementsByName('orientation')
-    let orientation = ''
 
+<script>
+    // group / size / density / weight / style
+    const elements = document.getElementsByName('orientation')
+    const weights = document.getElementsByName('weight')
+    let fontSizes = document.getElementsByName('font-size')
+    let sizes = document.getElementsByName('size')
+    let groups = document.getElementsByName('group')
+    let lineHeights = document.getElementsByName('line-height')
+    let densities = document.getElementsByName('density')
+    fontSizes[0].value = 16
+    lineHeights[0].value = 16
+    groups[0].value = "Base"
+    densities[0].value = "Standard"
+    sizes[0].value = "XXXL"
+
+    let orientation = ''
+    let weight = ''
+    let fontSize = ''
+    let isItalic = ''
+    let lineHeight = ''
+    let group = ''
+    let size = ''
+    let density = ''
+    let weightName = ''
+    let styleName = ''
+
+    document.getElementById('make-style').onclick = () => {
+
+        for (let i = 0; i < weights.length; i++) {
+            if (weights[i].checked) {
+                weight = weights[i].value
+            }
+        }
+
+        fontSize = fontSizes[0].value.toString()
+        lineHeight = lineHeights[0].value
+        group = groups[0].value
+        size = sizes[0].value
+        isItalic = document.getElementById('italic').checked
+        density = densities[0].value
+        parent.postMessage({
+            pluginMessage: {
+                type: 'font-style',
+                weight: weight,
+                size: fontSize,
+                lineHeight: lineHeight,
+                isItalic: isItalic,
+                group: group,
+                density: density,
+                sizeName: size
+            }
+        }, '*')
+    }
     document.getElementById('label').onclick = () => {
         for (let i = 0; i < elements.length; i++) {
             if (elements[i].checked) {
@@ -160,4 +256,787 @@
     }
 
     onmessage = (event) => console.log(event.data.pluginMessage)
-</script>
+</script> -->
+
+<style>
+    /* Document
+ * ========================================================================== */
+
+    /**
+ * 1. Correct the line height in all browsers.
+ * 2. Prevent adjustments of font size after orientation changes in
+ *    IE on Windows Phone and in iOS.
+ */
+
+    html {
+        line-height: 1.15;
+        /* 1 */
+        -ms-text-size-adjust: 100%;
+        /* 2 */
+        -webkit-text-size-adjust: 100%;
+        /* 2 */
+    }
+
+    /* Sections
+ * ========================================================================== */
+
+    /**
+ * Correct the font size and margin on `h1` elements within `section` and
+ * `article` contexts in Chrome, Edge, Firefox, and Safari.
+ */
+
+    h1 {
+        font-size: 2em;
+        margin: 0.67em 0;
+    }
+
+    /* Grouping content
+ * ========================================================================== */
+
+    /**
+ * Remove the margin on nested lists in Chrome, Edge, IE, and Safari.
+ */
+
+    dl dl,
+    dl ol,
+    dl ul,
+    ol dl,
+    ul dl {
+        margin: 0;
+    }
+
+    /**
+ * Remove the margin on nested lists in Edge 18- and IE.
+ */
+
+    ol ol,
+    ol ul,
+    ul ol,
+    ul ul {
+        margin: 0;
+    }
+
+    /**
+ * 1. Add the correct box sizing in Firefox.
+ * 2. Correct the inheritance of border color in Firefox.
+ * 3. Show the overflow in Edge 18- and IE.
+ */
+
+    hr {
+        box-sizing: content-box;
+        /* 1 */
+        color: inherit;
+        /* 2 */
+        height: 0;
+        /* 1 */
+        overflow: visible;
+        /* 3 */
+    }
+
+    /**
+ * Add the correct display in IE.
+ */
+
+    main {
+        display: block;
+    }
+
+    /**
+ * 1. Correct the inheritance and scaling of font size in all browsers.
+ * 2. Correct the odd `em` font sizing in all browsers.
+ */
+
+    pre {
+        font-family: monospace, monospace;
+        /* 1 */
+        font-size: 1em;
+        /* 2 */
+    }
+
+    /* Text-level semantics
+ * ========================================================================== */
+
+    /**
+ * Remove the gray background on active links in IE 10.
+ */
+
+    a {
+        background-color: transparent;
+    }
+
+    /**
+ * Add the correct text decoration in Edge 18-, IE, and Safari.
+ */
+
+    abbr[title] {
+        text-decoration: underline;
+        text-decoration: underline dotted;
+    }
+
+    /**
+ * Add the correct font weight in Chrome, Edge, and Safari.
+ */
+
+    b,
+    strong {
+        font-weight: bolder;
+    }
+
+    /**
+ * 1. Correct the inheritance and scaling of font size in all browsers.
+ * 2. Correct the odd `em` font sizing in all browsers.
+ */
+
+    code,
+    kbd,
+    samp {
+        font-family: monospace, monospace;
+        /* 1 */
+        font-size: 1em;
+        /* 2 */
+    }
+
+    /**
+ * Add the correct font size in all browsers.
+ */
+
+    small {
+        font-size: 80%;
+    }
+
+    /* Embedded content
+ * ========================================================================== */
+
+    /**
+ * Add the correct display in IE 9-.
+ */
+
+    audio,
+    video {
+        display: inline-block;
+    }
+
+    /**
+ * Add the correct display in iOS 4-7.
+ */
+
+    audio:not([controls]) {
+        display: none;
+        height: 0;
+    }
+
+    /**
+ * Remove the border on images within links in IE 10-.
+ */
+
+    img {
+        border-style: none;
+    }
+
+    /**
+ * Hide the overflow in IE.
+ */
+
+    svg:not(:root) {
+        overflow: hidden;
+    }
+
+    /* Tabular data
+ * ========================================================================== */
+
+    /**
+ * 1. Correct table border color inheritance in all Chrome, Edge, and Safari.
+ * 2. Remove text indentation from table contents in Chrome, Edge, and Safari.
+ */
+
+    table {
+        border-color: inherit;
+        /* 1 */
+        text-indent: 0;
+        /* 2 */
+    }
+
+    /* Forms
+ * ========================================================================== */
+
+    /**
+ * Remove the margin on controls in Safari.
+ */
+
+    button,
+    input,
+    select {
+        margin: 0;
+    }
+
+    /**
+ * 1. Show the overflow in IE.
+ * 2. Remove the inheritance of text transform in Edge 18-, Firefox, and IE.
+ */
+
+    button {
+        overflow: visible;
+        /* 1 */
+        text-transform: none;
+        /* 2 */
+    }
+
+    /**
+ * Correct the inability to style buttons in iOS and Safari.
+ */
+
+    button,
+    [type="button"],
+    [type="reset"],
+    [type="submit"] {
+        -webkit-appearance: button;
+    }
+
+    /**
+ * Correct the padding in Firefox.
+ */
+
+    fieldset {
+        padding: 0.35em 0.75em 0.625em;
+    }
+
+    /**
+ * Show the overflow in Edge 18- and IE.
+ */
+
+    input {
+        overflow: visible;
+    }
+
+    /**
+ * 1. Correct the text wrapping in Edge 18- and IE.
+ * 2. Correct the color inheritance from `fieldset` elements in IE.
+ */
+
+    legend {
+        box-sizing: border-box;
+        /* 1 */
+        color: inherit;
+        /* 2 */
+        display: table;
+        /* 1 */
+        max-width: 100%;
+        /* 1 */
+        white-space: normal;
+        /* 1 */
+    }
+
+    /**
+ * 1. Add the correct display in Edge 18- and IE.
+ * 2. Add the correct vertical alignment in Chrome, Edge, and Firefox.
+ */
+
+    progress {
+        display: inline-block;
+        /* 1 */
+        vertical-align: baseline;
+        /* 2 */
+    }
+
+    /**
+ * Remove the inheritance of text transform in Firefox.
+ */
+
+    select {
+        text-transform: none;
+    }
+
+    /**
+ * 1. Remove the margin in Firefox and Safari.
+ * 2. Remove the default vertical scrollbar in IE.
+ */
+
+    textarea {
+        margin: 0;
+        /* 1 */
+        overflow: auto;
+        /* 2 */
+    }
+
+    /**
+ * 1. Add the correct box sizing in IE 10-.
+ * 2. Remove the padding in IE 10-.
+ */
+
+    [type="checkbox"],
+    [type="radio"] {
+        box-sizing: border-box;
+        /* 1 */
+        padding: 0;
+        /* 2 */
+    }
+
+    /**
+ * 1. Correct the odd appearance in Chrome, Edge, and Safari.
+ * 2. Correct the outline style in Safari.
+ */
+
+    [type="search"] {
+        -webkit-appearance: textfield;
+        /* 1 */
+        outline-offset: -2px;
+        /* 2 */
+    }
+
+    /**
+ * Correct the cursor style of increment and decrement buttons in Safari.
+ */
+
+    ::-webkit-inner-spin-button,
+    ::-webkit-outer-spin-button {
+        height: auto;
+    }
+
+    /**
+ * Correct the text style of placeholders in Chrome, Edge, and Safari.
+ */
+
+    ::-webkit-input-placeholder {
+        color: inherit;
+        opacity: 0.54;
+    }
+
+    /**
+ * Remove the inner padding in Chrome, Edge, and Safari on macOS.
+ */
+
+    ::-webkit-search-decoration {
+        -webkit-appearance: none;
+    }
+
+    /**
+ * 1. Correct the inability to style upload buttons in iOS and Safari.
+ * 2. Change font properties to `inherit` in Safari.
+ */
+
+    ::-webkit-file-upload-button {
+        -webkit-appearance: button;
+        /* 1 */
+        font: inherit;
+        /* 2 */
+    }
+
+    /**
+ * Remove the inner border and padding of focus outlines in Firefox.
+ */
+
+    ::-moz-focus-inner {
+        border-style: none;
+        padding: 0;
+    }
+
+    /**
+ * Restore the focus outline styles unset by the previous rule in Firefox.
+ */
+
+    :-moz-focusring {
+        outline: 1px dotted ButtonText;
+    }
+
+    /**
+ * Remove the additional :invalid styles in Firefox.
+ */
+
+    :-moz-ui-invalid {
+        box-shadow: none;
+    }
+
+    /* Interactive
+ * ========================================================================== */
+
+    /*
+ * Add the correct display in Edge 18- and IE.
+ */
+
+    details {
+        display: block;
+    }
+
+    /*
+ * Add the correct styles in Edge 18-, IE, and Safari.
+ */
+
+    dialog {
+        background-color: white;
+        border: solid;
+        color: black;
+        display: block;
+        height: -moz-fit-content;
+        height: -webkit-fit-content;
+        height: fit-content;
+        left: 0;
+        margin: auto;
+        padding: 1em;
+        position: absolute;
+        right: 0;
+        width: -moz-fit-content;
+        width: -webkit-fit-content;
+        width: fit-content;
+    }
+
+    dialog:not([open]) {
+        display: none;
+    }
+
+    /*
+ * Add the correct display in all browsers.
+ */
+
+    summary {
+        display: list-item;
+    }
+
+    /* Scripting
+ * ========================================================================== */
+
+    /**
+ * Add the correct display in IE 9-.
+ */
+
+    canvas {
+        display: inline-block;
+    }
+
+    /**
+ * Add the correct display in IE.
+ */
+
+    template {
+        display: none;
+    }
+
+    /* User interaction
+ * ========================================================================== */
+
+    /**
+ * Add the correct display in IE 10-.
+ */
+
+    [hidden] {
+        display: none;
+    }
+
+    * {
+        --focus-accent-1: oklch(0.56 0.22 287.98);
+        --focus-accent-2: oklch(0.4 0.22 287.98);
+        --gray-50: hsla(0, 0%, 95%, 1);
+        --gray-100: hsla(0, 0%, 70%, 1);
+        --gray-200: hsla(0, 0%, 40%, 1);
+        --gray-300: hsla(0, 0%, 17%, 1);
+
+        --sizes-2: 0.5rem;
+        --sizes-4: 1rem;
+        --sizes-10: 2.5rem;
+    }
+
+    body {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        flex-direction: column;
+        align-items: center;
+        background: var(--gray-300);
+        border-radius: 0;
+        margin: 0;
+        font-family: Inter;
+        color: var(--gray-100);
+    }
+
+    p {
+        color: var(--gray-50);
+        text-align: right;
+        font-size: 0.6875rem;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 1rem;
+        letter-spacing: 0.00688rem;
+    }
+
+    .toolbar {
+        display: flex;
+        align-items: flex-start;
+        align-self: stretch;
+        border-bottom: 0.5px solid var(--gray-200);
+        width: 100%;
+    }
+
+    :is(.toolbar) button {
+        display: flex;
+        padding: var(--sizes-2) var(--sizes-4);
+        background: var(--gray-300);
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--gray-300);
+    }
+
+    .inactive-tab {
+        color: var(--gray-200);
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        border-bottom: 0;
+    }
+
+    .active-tab {
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        color: var(--gray-50);
+        border-bottom: 1px solid var(--gray-50);
+    }
+
+    .tab {
+        background: var(--gray-300, #2C2C2C);
+        width: 100%;
+        height: 100%;
+        display: block;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.625rem;
+        flex: 1 0 0;
+        align-self: stretch;
+    }
+
+    .tab-hidden {
+        display: none;
+        visibility: 0;
+        height: 0;
+        width: 0;
+    }
+
+    table {
+        border: 1px solid var(--gray-100);
+        border-collapse: collapse;
+        border-spacing: 0;
+        font-size: 0.875rem;
+        inline-size: 100%;
+    }
+
+    th,
+    td {
+        text-align: left;
+        border: 1px solid var(--gray-100);
+        gap: 0;
+        padding: 0.25rem 0.5rem;
+        color: var(--gray-50)
+    }
+
+    td:has(input),
+    tr:has(input) {
+        padding: 0;
+    }
+
+    input[type="text"] {
+        block-size: 2rem;
+        inline-size: 100%;
+        background-color: var(--gray-300);
+        border: 0;
+        color: var(--gray-50);
+        font-size: 0.875rem;
+        padding-inline: 0.5rem;
+    }
+
+    input[type="text"]:focus-visible {
+        outline: 0.1rem solid var(--focus-accent-1);
+    }
+
+    .outer {
+        display: flex;
+        flex-flow: column;
+        justify-content: start;
+        align-items: center;
+        padding: 1rem 1rem 5rem 1rem;
+        inline-size: fit-content;
+        block-size: fit-content;
+        gap: 1rem;
+    }
+
+    .inner {
+        block-size: fit-content;
+        inline-size: 30rem;
+        display: flex;
+        flex-flow: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    button:not(.active-tab, .inactive-tab) {
+        border: 1px solid var(--gray-50);
+        border-radius: 0.38rem;
+        color: var(--gray-50);
+        background-color: var(--gray-300);
+        padding: 0.44rem 0.75rem;
+        cursor: pointer;
+        transition: all ease-in-out 80ms;
+    }
+
+    button:hover:not(.active-tab, .inactive-tab) {
+        background-color: var(--focus-accent-2);
+        border-color: var(--focus-accent-2);
+    }
+
+    #apply {
+        align-self: flex-end;
+    }
+
+    .hide {
+        display: none;
+    }
+
+    footer {
+        display: flex;
+        flex-flow: row;
+        inline-size: 100%;
+        box-sizing: border-box;
+        position: fixed;
+        bottom: 0;
+        border-top: 1px solid var(--gray-200);
+        padding: 1rem;
+        background-color: var(--gray-300);
+        justify-content: end;
+    }
+</style>
+
+<body>
+    <div class="toolbar">
+        <button class="active-tab">Labeling</button>
+        <button class="inactive-tab">Annotation</button>
+        <button class="inactive-tab">Library</button>
+    </div>
+
+    <section class="outer">
+        <section class="inner">
+            <div id="title" class="hide">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M8.67927 2.67928L5.99999 0L3.3207 2.67928L5.99999 5.35857L8.67927 2.67928ZM5.35857 5.99999L2.67928 3.3207L0 5.99999L2.67928 8.67927L5.35857 5.99999ZM9.32072 3.3207L12 5.99999L9.32072 8.67927L6.64143 5.99999L9.32072 3.3207ZM8.67927 9.32072L5.99999 6.64143L3.3207 9.32072L5.99999 12L8.67927 9.32072Z"
+                        fill="#F2F2F2" />
+                </svg>
+                Tab (Component)
+            </div>
+
+            <main id="labeling" class="tab">
+                <p class="hint">Select a component to begin</p>
+                <table class="hide">
+                    <tr class="header-row">
+                        <th>Variation</th>
+                        <th>Label</th>
+                    </tr>
+                </table>
+        </section>
+        <footer class="hide">
+            <button id="apply" class="hide">Apply Labels</button>
+        </footer>
+        </main>
+    </section>
+    <main id="annotation" class="tab tab-hidden">
+        <p>Annotation</p>
+    </main>
+    <main id="library" class="tab tab-hidden">
+        <p>Library</p>
+    </main>
+
+    <script>
+        let tabs = Array.from(document.querySelectorAll(":is(.toolbar) button"))
+        let apply = document.querySelector('#apply')
+        tabs.forEach((tab) => {
+            tab.addEventListener("click", () => {
+                tabs.forEach((item) => {
+                    if (item.classList.contains("active-tab")) {
+                        item.classList = ["inactive-tab"]
+                    }
+                })
+                tab.classList.add("active-tab")
+                if (tab.innerText == "Labeling") {
+                    let labeling = document.getElementById("labeling")
+                    let annotation = document.getElementById("annotation")
+                    let library = document.getElementById("library")
+                    labeling.classList = ["tab"]
+                    annotation.classList = ["tab tab-hidden"]
+                    library.classList = ["tab tab-hidden"]
+                } else if (tab.innerText == "Annotation") {
+                    let labeling = document.getElementById("labeling")
+                    let annotation = document.getElementById("annotation")
+                    let library = document.getElementById("library")
+                    labeling.classList = ["tab tab-hidden"]
+                    library.classList = ["tab tab-hidden"]
+                    annotation.classList = ["tab"]
+                } else {
+                    let labeling = document.getElementById("labeling")
+                    let annotation = document.getElementById("annotation")
+                    let library = document.getElementById("library")
+                    labeling.classList = ["tab tab-hidden"]
+                    annotation.classList = ["tab tab-hidden"]
+                    library.classList = ["tab"]
+                }
+            })
+        })
+
+        parent.postMessage({ pluginMessage: { foo: "bar" } }, "*")
+
+        onmessage = (event) => {
+            let hint = document.querySelector('.hint')
+            let title = document.querySelector('#title')
+            let footer = document.querySelector('footer')
+            let table = document.querySelector('table')
+            hint.classList.add('hide')
+            apply.classList.remove('hide')
+            footer.classList.remove('hide')
+            table.classList.remove('hide')
+            title.classList.remove('hide')
+            let variants = []
+
+            Array.from(table.children).forEach((item) => {
+                if (item.classList.contains("header-row") == false) {
+                    item.remove()
+                }
+            })
+
+
+            for (let i = 0; i < event.data.pluginMessage.length; i++) {
+                if (variants.includes(event.data.pluginMessage[i]) == false) {
+                    variants.push(event.data.pluginMessage[i])
+                }
+            }
+
+            for (let i = 0; i < variants.length; i++) {
+                let variant = variants[i]
+                let row = document.createElement('tr')
+                let variantCell = document.createElement('td')
+                variantCell.classList.add('rename-input')
+                let inputCell = document.createElement('td')
+                let input = document.createElement('input')
+                let allCells = Array.from(document.querySelectorAll('td'))
+                input.setAttribute("type", "text")
+                inputCell.appendChild(input)
+                let isPresent = false;
+                variantCell.innerText = variant
+                row.appendChild(variantCell)
+                row.appendChild(inputCell)
+                table.appendChild(row)
+            }
+        }
+
+        let labels = []
+        apply.addEventListener('click', () => {
+            let inputs = Array.from(document.querySelectorAll('input'))
+            let originals = Array.from(document.querySelectorAll('.rename-input'))
+            for (let i = 0; i < inputs.length; i++) {
+                labels.push({
+                    old: originals[i].innerText,
+                    new: inputs[i].value
+                })
+            }
+            // console.log(labels)
+
+            parent.postMessage({ pluginMessage: { type: "applyLabel", data: labels } }, "*")
+        })
+    </script>
+
+</body>
