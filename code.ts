@@ -9,11 +9,17 @@ figma.ui.onmessage = (msg) => {
     figma.on("selectionchange", () => {
       figma.currentPage.selection.forEach((item) => {
         if (item.type === "COMPONENT_SET") {
-          // item.layoutMode = "NONE";
-          item.layoutWrap = "WRAP";
-          item.paddingTop = 72;
-          item.counterAxisSpacing = 48;
-          console.log(item);
+          item.layoutMode = "HORIZONTAL";
+          const widest = getWidestChildHeight(item);
+          figma.ui.postMessage(
+            `For best results, make sure there vertical spacing between components is a at least ${
+              widest * 2
+            }px wide and the top padding is at least 52px wide.`
+          );
+          // item.layoutWrap = "WRAP";
+          // item.paddingTop = 72;
+          // item.counterAxisSpacing = 48;
+          // item.itemSpacing = getWidestChildHeight(item);
           orientation = getOrientation(item);
           item.children.forEach((child) => {
             if (child.type === "COMPONENT") {
@@ -40,23 +46,56 @@ figma.ui.onmessage = (msg) => {
         let cv = (x: any) => x / 255;
         const color: RGB = { r: cv(151), g: cv(71), b: cv(255) };
         let ids: string[] = [];
+        const widest = getWidestChildHeight(item);
+        figma.ui.postMessage(
+          `For best results, make sure the vertical spacing between components is a at least <b>${
+            widest * 2
+          }px</b> wide and the top padding is at least 72px.`
+        );
         // let frame = figma.createFrame();
         // frame.fills = [];
         // frame.name =
         //   item.name.toLowerCase().split(" ").join("_") + "_label_frame";
+        // frame.x = item.absoluteBoundingBox!.x;
+        // frame.y = item.absoluteBoundingBox!.y;
+        // frame.layoutMode = "HORIZONTAL";
+        // frame.layoutWrap = "WRAP";
+        // frame.paddingTop = 48;
+        // frame.counterAxisSpacing = 76;
+        // frame.itemSpacing = widest;
         // frame.resize(
         //   item.absoluteBoundingBox!.width,
         //   item.absoluteBoundingBox!.height
         // );
-        // frame.x = item.absoluteBoundingBox!.x;
-        // frame.y = item.absoluteBoundingBox!.y;
         figma.currentPage.selection = [];
+        console.log("widest: ", widest);
         figma
           .loadFontAsync({ family: "Inter", style: "Regular" })
           .then(async (_) => {
             figma.loadFontAsync(fontName).then(async (_) => {
               for (var i = 0; i < item.children.length; i++) {
-                let data = msg.data[i].new;
+                let data: string = "";
+                if (msg.data[i].new === "") {
+                  msg.data[i].old.split(",").forEach((item: string) => {
+                    let word = item.split("=")[1];
+                    if (word === "True") {
+                      word = item.split("=")[0];
+                    }
+                    if (word !== "Default" && word !== "False") {
+                      if (data == "") {
+                        data = word;
+                      } else {
+                        data = `${data} / ${word}`;
+                      }
+                    }
+                  });
+                } else {
+                  data = msg.data[i].new;
+                }
+
+                // if (msg.data[i].new === "") {
+                //   data = data.substring(0, 8);
+                // }
                 if (data !== "") {
                   try {
                     await figma.loadFontAsync(fontName);
@@ -70,6 +109,7 @@ figma.ui.onmessage = (msg) => {
                   //   y: child.absoluteBoundingBox!.y,
                   // });
                   const label = figma.createText();
+                  // frame.appendChild(label);
                   label.fontName = fontName;
                   // frame.clipsContent = false;
                   // frame.appendChild(label);
@@ -78,6 +118,12 @@ figma.ui.onmessage = (msg) => {
                     child.absoluteBoundingBox!.y -
                     label.absoluteBoundingBox!.height -
                     padding;
+                  if (data.length > 26) {
+                    label.resize(widest * 2, 24);
+                    if (data.length > 30) {
+                      label.y = label.y - 16;
+                    }
+                  }
                   label.characters = data;
                   if (data != "") {
                     label.name = `label_${data
@@ -94,17 +140,35 @@ figma.ui.onmessage = (msg) => {
                   ids.push(label.id);
                   console.log("label id: ", label.id);
                   labels.push(label);
-                  figma.currentPage.selection =
-                    figma.currentPage.selection.concat(label);
+                  // // figma.currentPage.selection =
+                  //   figma.currentPage.selection.concat(label);
+                  // frame.x = item.absoluteBoundingBox!.x;
+                  // frame.y = item.absoluteBoundingBox!.y;
                 }
               }
             });
           });
-        // figma.group(labels, frame);
-        setTimeout(() => {
-          figma.group(figma.currentPage.selection, figma.currentPage).name =
-            "label_group";
-        }, 300);
+        // let all: SceneNode[];
+        // (async () => {
+        //   all = figma.currentPage.findAll((item) =>
+        //     item.name.includes("label")
+        //   );
+        //   console.log(all);
+        // })().then(() => {
+        //   figma.group(all, figma.currentPage).name = "label_group";
+        // });
+        // setTimeout(() => {
+        //   let all = figma.currentPage.findAll((item) =>
+        //     item.name.includes("label")
+        //   );
+        //   console.log(all);
+        //   figma.group(all, figma.currentPage).name = "label_group";
+        // }, 1000 * item.children.length);
+
+        // setTimeout(() => {
+        //   figma.group(figma.currentPage.selection, figma.currentPage).name =
+        //     "label_group";
+        // }, 2000 * item.children.length);
       }
     });
     let allLabels = [];
