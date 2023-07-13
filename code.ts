@@ -9,11 +9,11 @@ figma.ui.onmessage = (msg) => {
     figma.on("selectionchange", () => {
       figma.currentPage.selection.forEach((item) => {
         if (item.type === "COMPONENT_SET") {
-          item.layoutMode = "HORIZONTAL";
+          // item.layoutMode = "HORIZONTAL";
           const widest = getWidestChildHeight(item);
           figma.ui.postMessage(
             `For best results, make sure there vertical spacing between components is a at least ${
-              widest * 2
+              widest > 72 ? 72 : widest * 2
             }px wide and the top padding is at least 52px wide.`
           );
           // item.layoutWrap = "WRAP";
@@ -22,9 +22,9 @@ figma.ui.onmessage = (msg) => {
           // item.itemSpacing = getWidestChildHeight(item);
           orientation = getOrientation(item);
           item.children.forEach((child) => {
-            if (child.type === "COMPONENT") {
-              child.constraints = { horizontal: "CENTER", vertical: "CENTER" };
-            }
+            // if (child.type === "COMPONENT") {
+            //   child.constraints = { horizontal: "CENTER", vertical: "CENTER" };
+            // }
             variants.push(child.name);
             coords.push({
               id: child.id,
@@ -32,7 +32,7 @@ figma.ui.onmessage = (msg) => {
               y: child.absoluteBoundingBox?.y,
             });
           });
-          scaleParent(item, orientation);
+          // scaleParent(item, orientation);
           figma.ui.postMessage(variants);
         }
       });
