@@ -1,0 +1,63 @@
+---
+export let activeTab = "labeling";
+---
+
+<div class="toolbar">
+    <button id="labeling-btn" class="active-tab">Labeling</button>
+    <button id="data-btn" class="inactive-tab">Data</button>
+    <button id="annotation-btn" class="inactive-tab">Annotation</button>
+    <button id="library-btn" class="inactive-tab">Library</button>
+</div>
+
+<script>
+    import {tabOpened} from "../store.js"
+
+    let labelingBtn = document.getElementById("labeling-btn");
+    let dataBtn = document.getElementById("data-btn");
+    let annotationBtn = document.getElementById("annotation-btn");
+    let libraryBtn = document.getElementById("library-btn");
+
+    function setInactive(elements) {
+        elements.forEach(element => {
+            element.setAttribute("class", "inactive-tab");
+        });
+    }
+
+    tabOpened.set("data");
+
+    function setData() {
+        dataBtn.setAttribute("class", "active-tab");
+        setInactive([labelingBtn, annotationBtn, libraryBtn]);
+    }
+
+    function setLabeling() {
+        activeTab = "labeling"
+        labelingBtn.setAttribute("class", "active-tab");
+        setInactive([dataBtn, annotationBtn, libraryBtn]);
+    }
+
+    function setAnnotation() {
+        activeTab = "annotation"
+        annotationBtn.setAttribute("class", "active-tab");
+        setInactive([labelingBtn, dataBtn, libraryBtn]);
+    }
+
+    function setLibrary() {
+        activeTab = "library"
+        libraryBtn.setAttribute("class", "active-tab");
+        setInactive([labelingBtn, dataBtn, annotationBtn]);
+    }
+
+
+    document.getElementById("labeling-btn").addEventListener("click", setLabeling);
+    document.getElementById("data-btn").addEventListener("click", setData);
+    document.getElementById("annotation-btn").addEventListener("click", setAnnotation);
+    document.getElementById("library-btn").addEventListener("click", setLibrary);
+
+</script>
+
+<style>
+    button {
+        cursor: pointer;
+    }
+</style>

@@ -1,0 +1,16 @@
+---
+import Toolbar from "./toolbar.astro";
+import Labeling from "./tabs/labeling/labeling.astro";
+
+let activeTab = "labeling";
+---
+
+<main>
+    <Toolbar active={activeTab}/>
+    {activeTab === "labeling" &&
+            <Labeling/>}
+</main>
+
+<script>
+
+</script>
