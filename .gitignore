@@ -1,8 +1,5 @@
-# Node
-*.log
-*.log.*
-node_modules
-
-out/
-dist/
-code.js
+/node_modules/
+/public/build/
+public/index.html
+src/build
+.DS_Store
