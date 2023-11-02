@@ -1,26 +1,14 @@
 <script>
     import TabButton from "./tab_button.svelte"
-    import {activeIndex} from "../../stores";
+    import {tabNames} from "../../stores";
 
-    let index = 0
+    let tabData = []
 
-
-    let tabData = [
-        {name: "Tab 1", active: false},
-        {name: "Tab 2", active: false},
-        {name: "Tab 3", active: false},
-        {name: "Tab 4", active: false},
-    ]
-    function updateIndex(newIndex) {
-        index = newIndex
-        console.log(index)
-    }
-
-
-
-</script><nav>
+    tabNames.subscribe(v => v.map((name) => tabData.push(name)))
+</script>
+<nav>
     {#each tabData as tab, i}
-        <TabButton tabIndex={i}>{tab.name}</TabButton>
+        <TabButton tabIndex={i}>{tab}</TabButton>
     {/each}
 </nav>
 

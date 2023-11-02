@@ -1,1 +1,31 @@
-"use strict";figma.showUI(__html__,{themeColors:!0,width:600,height:208}),figma.ui.onmessage=e=>{if("create-shapes"===e.type){const t=[];for(let i=0;i<e.count;i++){var a;(a="rectangle"===e.shape?figma.createRectangle():"triangle"===e.shape?figma.createPolygon():figma.createEllipse()).x=150*i,a.fills=[{type:"SOLID",color:{r:1,g:.5,b:0}}],figma.currentPage.appendChild(a),t.push(a)}figma.currentPage.selection=t,figma.viewport.scrollAndZoomIntoView(t)}figma.closePlugin()};
+'use strict';
+
+function handleLabeling() {
+    figma.ui.postMessage({ type: "instruction", msg: "Select element(s) to label" });
+    figma.on('selectionchange', () => {
+        const selection = figma.currentPage.selection;
+        console.log("selected something: ", selection);
+        let names = [];
+        selection.forEach((item) => {
+            if (item.name !== undefined) {
+                if (names === []) {
+                    names = [item.name];
+                }
+                else {
+                    names.push(item.name);
+                }
+            }
+        });
+        const message = { type: "selection", selection: names };
+        if (message.selection.length > 0) {
+            figma.ui.postMessage(message);
+        }
+    });
+}
+
+figma.showUI(__html__, { themeColors: true, width: 600, height: 408 });
+figma.ui.onmessage = msg => {
+    if (msg.activeTab === "labeling") {
+        handleLabeling();
+    }
+};
