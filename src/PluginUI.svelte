@@ -1,10 +1,10 @@
 <script>
-	import Tabs from "./components/tabs/tabs.svelte"
-	import Labeling from "./pages/labeling.svelte"
-	import {activeIndex} from "./stores";
-	import Replicate from "./pages/Replicate.svelte";
+    import Tabs from "./components/tabs/tabs.svelte"
+    import Labeling from "./pages/labeling/labeling.svelte"
+    import {activeIndex} from "./stores";
+    import Replicate from "./pages/Replicate.svelte";
 
-	let index;
+    let index;
 
     activeIndex.subscribe(value => {
         index = value;

@@ -1,5 +1,6 @@
 <script>
-    import {activeIndex} from "../stores";
+    import {activeIndex} from "../../stores";
+    import {handleSelection} from "./handle_selection";
     import {Button, Input} from "figma-plugin-ds-svelte";
 
     let isActive = false;
@@ -15,40 +16,30 @@
     })
     onmessage = (event) => {
         let elements = []
+        let result = {}
         if (event.data.pluginMessage.type === "instruction") {
             message = event.data.pluginMessage.msg
         }
         if (event.data.pluginMessage.type === "selection") {
-            const selection = event.data.pluginMessage.selection
-            let labelToString = ""
-            if (selection.length > 0) {
-                selection.forEach((label) => {
-                    labelToString += label + ", "
-                })
-                labelToString = labelToString.slice(0, -2)
-
-                selection.forEach((item) => {
-                    elements.push(item)
-                })
-            } else {
-                message = "select element(s) to label"
-            }
-
-            message = `Selected: ${labelToString}`
-            console.log(elementLabels)
+            result = handleSelection(event)
+            elements = result.elements
+            message = result.message
+            elementLabels = result.elementLabels
         }
-        elementLabels = elements
+        console.log("elements: ", elements)
+        console.log("message: ", message)
+        console.log("elementLabels: ", elementLabels)
     }
 
 </script>
 <main>
-    {#if elementLabels.length === 0}
+    {#if elementLabels !== undefined && elementLabels.length === 0}
         <div class="message">
             <p>{message}</p>
         </div>
     {/if}
     <div class="selection">
-        {#if elementLabels.length !== 0}
+        {#if elementLabels !== undefined && elementLabels.length !== 0}
             <p>Selected elements</p>
         {/if}
         {#each elementLabels as item, i}
