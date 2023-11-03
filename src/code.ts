@@ -1,9 +1,13 @@
-import {handleLabeling} from "./labeling";
+import {handleLabeling, handleSaveAndLabel} from "./labeling";
 
 figma.showUI(__html__, {themeColors: true, width: 600, height: 408});
 
 figma.ui.onmessage = msg => {
     if (msg.activeTab === "labeling") {
         handleLabeling()
+    }
+    if (msg.type === "addLabels") {
+        console.log(msg)
+        handleSaveAndLabel(msg.data)
     }
 };

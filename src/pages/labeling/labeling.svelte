@@ -6,6 +6,7 @@
     let isActive = false;
 
     let message = ""
+    let selections = []
 
     let labels = []
     $: elementLabels = labels
@@ -25,10 +26,14 @@
             elements = result.elements
             message = result.message
             elementLabels = result.elementLabels
+            selections = result.selection
+            // console.log(result)
         }
-        console.log("elements: ", elements)
-        console.log("message: ", message)
-        console.log("elementLabels: ", elementLabels)
+    }
+
+    function handleInputChange() {
+        console.log("change")
+        parent.postMessage({pluginMessage: {type: "addLabels", data: selections}}, "*")
     }
 
 </script>
@@ -44,7 +49,8 @@
         {/if}
         {#each elementLabels as item, i}
             <div class="unit">
-                <Input class="input" placeholder={item}/>
+                <Input bind:value={selections[i].label} on:change={handleInputChange} class="input"
+                       placeholder={item}/>
                 <Button>Add Label</Button>
             </div>
         {/each}
