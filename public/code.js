@@ -43,7 +43,52 @@ function handleLabeling() {
     });
 }
 function handleSaveAndLabel(data) {
-    console.log(data);
+    return __awaiter(this, void 0, void 0, function* () {
+        let clientStorage = yield figma.clientStorage.getAsync("selection");
+        let stored = clientStorage;
+        let incoming = Array.from(data);
+        let all = [];
+        console.log("data: ", incoming);
+        console.log("stored init: ", stored);
+        stored = updateStored(incoming, stored);
+        console.log("stored after: ", stored);
+        incoming = pruneDups(incoming, stored);
+        console.log("incoming: ", incoming);
+        all = [...incoming, ...stored];
+        console.log("all: ", all);
+        yield figma.clientStorage.setAsync("selection", all);
+    });
+}
+function pruneDups(incoming, stored) {
+    let result = incoming;
+    let filtered = incoming.filter((item) => stored.some((i) => i.id === item.id));
+    console.log("fitlered: ", filtered);
+    if (filtered.length > 0) {
+        result = incoming.filter((item) => filtered.some((i) => i.id === item.id) == false);
+    }
+    return result;
+}
+function updateStored(incoming, stored) {
+    let result = stored;
+    result.map((item) => {
+        let any = hasAny(item.id, incoming);
+        if (any === true) {
+            let update = incoming.filter((i) => i.id === item.id)[0];
+            if ((item.label === '' && update.label !== '') || (item.label !== '' && update.label !== '')) {
+                item.label = update.label;
+            }
+        }
+    });
+    return result;
+}
+function hasAny(id, list) {
+    let result = false;
+    for (let i = 0; i < list.length; i++) {
+        if (result === false) {
+            result = list[i].id === id;
+        }
+    }
+    return result;
 }
 function exportSelection() {
     const selection = figma.currentPage.selection;
@@ -62,12 +107,13 @@ function exportSelection() {
 }
 
 figma.showUI(__html__, { themeColors: true, width: 600, height: 408 });
-figma.ui.onmessage = msg => {
+figma.ui.onmessage = (msg) => __awaiter(void 0, void 0, void 0, function* () {
     if (msg.activeTab === "labeling") {
         handleLabeling();
     }
     if (msg.type === "addLabels") {
         console.log(msg);
-        handleSaveAndLabel(msg.data);
+        yield handleSaveAndLabel(msg.data);
     }
-};
+});
+//# sourceMappingURL=code.js.map
